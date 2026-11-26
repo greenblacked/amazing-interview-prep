@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 concurrency:
   group: interview-deployment
   queue: max
@@ -54,7 +55,7 @@ jobs:
             refs/tags/*)
               tag="$GITHUB_REF_NAME"
               [[ "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
-              git merge-base --is-ancestor HEAD origin/main
+              scripts/ci/check-release.sh
               target=production ;;
             *) exit 1 ;;
           esac

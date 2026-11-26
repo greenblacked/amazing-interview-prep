@@ -524,6 +524,30 @@ const oralRounds = {
       "How can you tell whether a connected component is complete?",
       "Which part of that argument breaks with duplicate edges?",
       "Connects vertex and distinct edge counts."
+    ],
+    [
+      "Graph traversal",
+      "When does breadth-first search find the cheapest route?",
+      "What changes when one edge costs zero?",
+      "Distinguishes hop count from weighted cost."
+    ],
+    [
+      "Binary search",
+      "Which property lets you discard half the search space?",
+      "How would you find the first matching value among duplicates?",
+      "States a monotone predicate and stopping condition."
+    ],
+    [
+      "Stream processing",
+      "How would you sample a record from a stream of unknown size?",
+      "How can you show each record has equal probability?",
+      "Explains replacement probability."
+    ],
+    [
+      "Prefix sums",
+      "When would you precompute running totals?",
+      "What if point updates become frequent?",
+      "Balances query and update costs."
     ]
   ],
   "sql": [
@@ -574,6 +598,30 @@ const oralRounds = {
       "Which columns matter in an index for a tenant and time-range query?",
       "How would a single very large tenant affect the plan?",
       "Relates selectivity and observed plan to data distribution."
+    ],
+    [
+      "Transaction isolation",
+      "How could two reads in one transaction disagree?",
+      "Which guarantee would make a monthly report reproducible?",
+      "Distinguishes snapshots and statement visibility."
+    ],
+    [
+      "Session windows",
+      "What event gap should start a new visit?",
+      "How would you handle two events at exactly the cutoff?",
+      "Defines ordering and interval boundaries."
+    ],
+    [
+      "Join semantics",
+      "How can a WHERE clause change a left join?",
+      "Which rows disappear when a right-side predicate filters NULL?",
+      "Explains unmatched rows."
+    ],
+    [
+      "Data correction",
+      "How would you backfill a metric after correcting duplicate records?",
+      "How could you make rerunning the backfill safe?",
+      "Uses deterministic keys and reconciliation."
     ]
   ],
   "system-design": [
@@ -624,6 +672,30 @@ const oralRounds = {
       "Where would you enforce limits shared by multiple API servers?",
       "What happens if the shared counter becomes unavailable?",
       "Explains accuracy, availability and failure policy."
+    ],
+    [
+      "Blob storage",
+      "How should a service expose large user uploads?",
+      "What if storage succeeds and the metadata commit fails?",
+      "Reconciles orphaned objects."
+    ],
+    [
+      "Search indexing",
+      "How fresh must a search index be after an edit?",
+      "How can a delayed update resurrect a deleted item?",
+      "Uses versions and tombstones."
+    ],
+    [
+      "Capacity planning",
+      "Which traffic number determines peak write capacity?",
+      "How would a burst affect the queue drain time?",
+      "Relates arrival and service rates."
+    ],
+    [
+      "Schema migrations",
+      "How would two service versions share a changing schema?",
+      "When can you remove the old column safely?",
+      "Explains compatibility and observable cutover."
     ]
   ],
   "low-level-design": [
@@ -674,6 +746,30 @@ const oralRounds = {
       "When would you introduce a strategy interface for routing?",
       "Which behavior belongs in the caller when a strategy fails?",
       "Defines a narrow contract and fallback policy."
+    ],
+    [
+      "Versioned interfaces",
+      "How can an interface evolve without breaking callers?",
+      "How would you test an older consumer?",
+      "Defines compatibility contracts."
+    ],
+    [
+      "Immutable state",
+      "When should a value object be immutable?",
+      "How would you prevent mutation through an exposed collection?",
+      "Handles nested mutability."
+    ],
+    [
+      "Batch operations",
+      "How should a batch API describe partial success?",
+      "What should retrying a single failed item do?",
+      "Defines per-item outcomes."
+    ],
+    [
+      "Scheduling",
+      "How would you model dependencies between scheduled jobs?",
+      "Who rejects a cycle introduced during an update?",
+      "Protects graph invariants."
     ]
   ],
   "ai-coding": [
@@ -724,6 +820,30 @@ const oralRounds = {
       "Which invariants would you give an assistant reconciling two ledgers?",
       "How should it handle unmatched records that arrive tomorrow?",
       "Preserves totals and distinguishes pending from incorrect."
+    ],
+    [
+      "Dependency changes",
+      "What would make you reject a generated dependency upgrade?",
+      "What fixture would detect a behavior change with identical types?",
+      "Tests observable contracts."
+    ],
+    [
+      "Test oracles",
+      "How can you validate an implementation without copying its logic into the test?",
+      "When is a slower reference implementation useful?",
+      "Uses an independent oracle."
+    ],
+    [
+      "Scope control",
+      "How would you split a large assistant-generated refactor?",
+      "Which checkpoint can you verify independently?",
+      "Defines reversible increments."
+    ],
+    [
+      "Flaky tests",
+      "What evidence would you collect before accepting a generated timeout increase?",
+      "How would you reproduce the timing issue deterministically?",
+      "Controls clocks and scheduling."
     ]
   ],
   "engineering-management": [
@@ -774,6 +894,30 @@ const oralRounds = {
       "Describe an initiative you stopped before it was complete.",
       "What did you tell the engineers who had invested in it?",
       "Explains opportunity cost and acknowledges the work."
+    ],
+    [
+      "Career growth",
+      "How have you scoped a stretch assignment for an engineer?",
+      "What evidence showed the scope was appropriate?",
+      "Defines ownership and support."
+    ],
+    [
+      "Team health",
+      "How would you detect burnout before someone resigns?",
+      "What would you change if the team distrusts surveys?",
+      "Uses qualitative evidence and sustainable workload."
+    ],
+    [
+      "Onboarding",
+      "Describe how you shortened time to independent ownership.",
+      "Which signal distinguished familiarity from readiness?",
+      "Measures independent execution."
+    ],
+    [
+      "Strategy",
+      "When have you declined a technically sound investment?",
+      "What would justify revisiting that decision?",
+      "Links opportunity cost to explicit criteria."
     ]
   ]
 };
