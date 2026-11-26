@@ -43,12 +43,11 @@
             </div>
             <h1>Get ready for<br /><em>the real thing.</em></h1>
             <p class="welcome-lede">
-              A quiet place to think out loud, work through hard problems, and
-              get sharper with every session.
+              Answer an interviewer’s questions, defend your reasoning in follow-ups, then work through four hands-on cases.
             </p>
             <div class="promise-row">
-              <span><b>2h</b> total session</span><span><b>06</b> prompts</span
-              ><span><b>20 min</b> per prompt</span>
+              <span><b>2h</b> total session</span><span><b>8</b> spoken questions</span
+              ><span><b>4</b> practical cases</span>
             </div>
           </div>
           <div class="setup-panel">
@@ -118,17 +117,11 @@
               <div class="rail-heading">
                 <div>
                   <span class="eyebrow">YOUR SESSION</span>
-                  <h2>6 prompts</h2>
+                  <h2 id="agenda-heading">Interview agenda</h2>
                 </div>
-                <span id="progress-count" class="progress-count">01 / 06</span>
+                <span id="progress-count" class="progress-count">01 / 12</span>
               </div>
-              <div
-                id="question-progress"
-                class="progress-bar"
-                data-progress="1"
-              >
-                <span></span>
-              </div>
+              <progress id="question-progress" class="timer-progress" aria-label="Position in interview" max="12" value="1"></progress>
               <nav
                 id="question-nav"
                 class="question-nav"
@@ -153,11 +146,6 @@
               </div>
               <h1 id="question-title"></h1>
               <div id="question-prompt" class="question-prompt"></div>
-              <div id="source-wrap" class="source-wrap" hidden>
-                <a id="question-source" target="_blank" rel="noreferrer"
-                  >Explore source material</a
-                >
-              </div>
               <div class="question-controls">
                 <button id="previous-button" class="button button-quiet">
                   Previous
@@ -267,18 +255,16 @@
         </section>
       </main>
       <footer class="site-footer">
-        <span>6 PROMPTS · 20 MINUTES EACH · TWO HOURS TOTAL</span
+        <span>INTERVIEW STUDIO</span
         ><span>PROGRESS SAVED ON THIS DEVICE</span>
       </footer>
     </div>
     <dialog id="help-dialog" class="help-dialog">
       <button id="close-help" class="dialog-close" aria-label="Close">×</button>
       <div class="eyebrow">SESSION FORMAT</div>
-      <h2>Two hours, six prompts.</h2>
+      <h2>Your two-hour interview</h2>
       <p>
-        Each prompt is designed for a focused 20-minute attempt. Work through
-        them in any order, capture your thinking, then open the rubric when
-        you're ready to reflect.
+        Spend 40 minutes on four opening questions and their follow-ups. Then use 80 minutes for four practical cases. Each item has its own notes and review rubric.
       </p>
       <p>
         Your progress and notes are saved locally in this browser. There are no
