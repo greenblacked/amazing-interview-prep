@@ -120,3 +120,16 @@ test("validates inputs and computes remaining time without going negative", () =
   assert.equal(remainingMs(session, 10), SESSION_MINUTES * 60_000);
   assert.equal(remainingMs(session, session.deadlineAt + 500), 0);
 });
+
+test("each track uses twelve distinct discussion pairs across three interviews", async () => {
+  const { tracks, levels, questions } = await import("../public/bank.mjs");
+  for (const { slug: track } of tracks) {
+    for (const level of levels) {
+      const pool = questions(track, level);
+      const interviews = [0, 1, 2].map(attempt =>
+        createSession({ track, level, cases: pool, attempt }).questions);
+      const spoken = interviews.flat().filter(q => q.kind !== "Practical");
+      assert.equal(new Set(spoken.map(q => q.prompt)).size, 24);
+    }
+  }
+});

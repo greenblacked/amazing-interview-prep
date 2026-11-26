@@ -6,40 +6,69 @@ import {
   QUESTION_MINUTES,
 } from "./session.mjs";
 
-const STORAGE_KEY = "amazing-interview-prep:v1";
+import { readRecord, writeRecord } from "./storage.mjs";
 const $ = (selector) => document.querySelector(selector);
 const welcomeView = $("#welcome-view");
 const sessionView = $("#session-view");
 const finishView = $("#finish-view");
-let state = readState();
+let releaseEditor;
+const memoryRecords = new Map();
 let activeTrack = tracks[0]?.slug;
 let activeLevel = levels[1] ?? levels[0];
 let session = null;
 let timerHandle = null;
 
-function readState() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    return { attempts: parsed.attempts || {}, sessions: parsed.sessions || {} };
-  } catch {
-    return { attempts: {}, sessions: {} };
-  }
+function loadRecord(key) {
+  if (memoryRecords.has(key)) return memoryRecords.get(key);
+  try { return readRecord(localStorage, key); }
+  catch { return { nextAttempt: 0 }; }
 }
 
 function persist() {
+  const key = recordKey(session.track, session.level);
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (!navigator.locks) throw new Error("Persistent editing unavailable");
+    writeRecord(localStorage, key, session);
+    memoryRecords.delete(key);
     $("#save-state").textContent = "Saved on this device";
   } catch {
-    $("#save-state").textContent = "Could not save";
+    memoryRecords.set(key, { session, nextAttempt: session.attempt + 1 });
+    $("#save-state").textContent = "Only in this tab · copy notes before closing";
   }
+}
+
+async function editSession(resume = false) {
+  const key = recordKey();
+  const enter = () => {
+    const record = loadRecord(key);
+    if (resume) {
+      if (record.session?.status !== "in-progress") return renderResumeCallout();
+      openSession(record.session);
+    } else startNewSession(record);
+  };
+  if (!navigator.locks) return enter();
+  await navigator.locks.request("interview:editor:" + key, { ifAvailable: true }, async lock => {
+    if (!lock) {
+      $("#editor-message").textContent = "This session is open in another tab. Return to its overview to edit here.";
+      return;
+    }
+    if (key !== recordKey() || welcomeView.hidden) return;
+    $("#editor-message").textContent = "";
+    const closed = new Promise(resolve => { releaseEditor = resolve; });
+    try {
+      enter();
+      if (!sessionView.hidden) await closed;
+    } finally {
+      releaseEditor = null;
+    }
+  });
 }
 
 function recordKey(track = activeTrack, level = activeLevel) {
   return `${track}:${level}`;
 }
 function currentRecord() {
-  return state.sessions[recordKey()] ?? null;
+  return loadRecord(recordKey()).session ?? null;
 }
 function activeTrackObject() {
   return tracks.find((item) => item.slug === activeTrack) ?? tracks[0];
@@ -122,6 +151,7 @@ function radioKeyHandler(selector, button) {
 }
 
 function renderResumeCallout() {
+  $("#editor-message").textContent = "";
   const callout = $("#resume-callout");
   const saved = currentRecord();
   if (!saved || saved.status !== "in-progress" || remainingMs(saved) <= 0) {
@@ -136,27 +166,27 @@ function renderResumeCallout() {
   const resume = document.createElement("button");
   resume.type = "button";
   resume.textContent = "Resume where you left off";
-  resume.addEventListener("click", () => openSession(saved));
+  resume.addEventListener("click", () => editSession(true));
   callout.append(resume);
 }
 
 function showView(view) {
+  if (view !== "session") releaseEditor?.();
   welcomeView.hidden = view !== "welcome";
   sessionView.hidden = view !== "session";
   finishView.hidden = view !== "finish";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function startNewSession() {
-  const key = recordKey();
-  const unfinished = state.sessions[key];
+function startNewSession(record) {
+  const unfinished = record.session;
   if (unfinished?.status === "in-progress" && remainingMs(unfinished) > 0) {
     const confirmed = window.confirm(
       "Replace your unfinished session? Its notes and self-review will be lost.",
     );
     if (!confirmed) return;
   }
-  const attempt = state.attempts[key] ?? 0;
+  const attempt = record.nextAttempt ?? 0;
   const cases = questions(activeTrack, activeLevel);
   session = createSession({
     track: activeTrack,
@@ -165,9 +195,6 @@ function startNewSession() {
     attempt,
     now: Date.now(),
   });
-  state.attempts[key] = attempt + 1;
-  state.sessions[key] = session;
-  persist();
   openSession(session);
 }
 
@@ -187,6 +214,7 @@ function openSession(record) {
     "0",
   );
   showView("session");
+  persist();
   renderQuestion();
   updateTimer();
   clearInterval(timerHandle);
@@ -217,6 +245,13 @@ function renderQuestion() {
   const nav = $("#question-nav");
   nav.replaceChildren();
   session.questions.forEach((item, i) => {
+    const practical = (item.kind ?? "Practical") === "Practical";
+    if (i === 0 || (practical && session.questions[i - 1]?.kind === "Follow-up")) {
+      const heading = document.createElement("strong");
+      heading.className = "agenda-section";
+      heading.textContent = practical ? "Practical cases" : "Interview discussion";
+      nav.append(heading);
+    }
     const button = document.createElement("button");
     button.className = "question-link";
     button.type = "button";
@@ -243,7 +278,7 @@ function renderQuestion() {
     `${String(index + 1).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
   $("#question-progress").max = total;
   $("#question-progress").value = index + 1;
-  $("#agenda-heading").textContent = total + " prompts";
+  $("#agenda-heading").textContent = "Interview agenda";
   $("#previous-button").disabled = index === 0;
   $("#next-button").textContent =
     index === total - 1 ? "Finish session" : "Next prompt";
@@ -267,7 +302,6 @@ function saveQuestion() {
     improve: $("#improve-input").value,
   };
   question.reviewed = $("#reviewed-check").checked;
-  state.sessions[recordKey(session.track, session.level)] = session;
   persist();
   $("#note-count").textContent =
     `${wordCount(question.notes)} ${wordCount(question.notes) === 1 ? "word" : "words"}`;
@@ -277,7 +311,6 @@ function goToQuestion(index) {
   if (index < 0 || index >= session.questions.length) return;
   saveQuestion();
   session.currentIndex = index;
-  state.sessions[recordKey(session.track, session.level)] = session;
   persist();
   renderQuestion();
 }
@@ -301,13 +334,12 @@ function updateTimer() {
 
 function completeSession(expired = false) {
   if (!session) return;
-  saveQuestion();
+  if (!sessionView.hidden) saveQuestion();
   clearInterval(timerHandle);
   timerHandle = null;
   session.status = "complete";
   session.finishedAt = Date.now();
   session.expired = expired;
-  state.sessions[recordKey(session.track, session.level)] = session;
   persist();
   const reviewed = session.questions.filter((q) => q.reviewed).length;
   const notes = session.questions.filter((q) => (q.notes ?? "").trim()).length;
@@ -344,7 +376,7 @@ function goHome() {
   showView("welcome");
 }
 
-$("#start-button").addEventListener("click", startNewSession);
+$("#start-button").addEventListener("click", () => editSession());
 $("#back-button").addEventListener("click", () => {
   saveQuestion();
   persist();
@@ -367,12 +399,18 @@ $("#notes-input").addEventListener("input", saveQuestion);
   "#confidence-select",
   "#strengths-input",
   "#improve-input",
-  "#reviewed-check",
 ].forEach((selector) => $(selector).addEventListener("input", saveQuestion));
+$("#reviewed-check").addEventListener("input", () => {
+  saveQuestion();
+  const current = $('#question-nav [aria-current="true"]');
+  const question = activeQuestion();
+  current.querySelector(".nav-check").textContent = question.reviewed ? "✓" : "";
+  current.setAttribute("aria-label", `Question ${session.currentIndex + 1}: ${question.title}${question.reviewed ? ", reviewed" : ""}`);
+});
 $("#return-home").addEventListener("click", goHome);
 $("#new-session").addEventListener("click", () => {
   goHome();
-  startNewSession();
+  editSession();
 });
 
 const helpDialog = $("#help-dialog");
