@@ -1,6 +1,6 @@
+import { discussionRounds } from "./bank.mjs";
 export const SESSION_MINUTES = 120;
-export const SESSION_QUESTION_COUNT = 6;
-export const QUESTION_MINUTES = SESSION_MINUTES / SESSION_QUESTION_COUNT;
+export const QUESTION_MINUTES = 20; // Also used by previously saved sessions.
 
 function hashSeed(value) {
   let h = 2166136261;
@@ -54,6 +54,19 @@ export function createSession({
     safeAttempt % 2 === 0 ? groupSize : cases.length,
   );
   const ordered = shuffled(group, hashSeed(`${track}/${level}/${safeAttempt}`));
+  const oralPool = discussionRounds(track);
+  const offset = (safeAttempt % 2) * 4;
+  const rounds = shuffled(oralPool.slice(offset, offset + 4), hashSeed(`oral/${track}/${level}/${safeAttempt}`));
+  const followUpDepth = {
+    Junior: "Walk through one concrete example.",
+    "Mid-level": "Compare two plausible answers and explain your choice.",
+    Senior: "Identify the assumption that matters most and what evidence would change your decision.",
+  };
+  const discussion = rounds.flatMap(([title, opening, followUp, rubric]) => [
+    { title, prompt: opening, rubric, kind: "Discussion", minutes: 5 },
+    { title: title + " follow-up", prompt: followUp + " " + followUpDepth[level], rubric, kind: "Follow-up", minutes: 5 },
+  ]);
+  const practical = ordered.slice(0, 4).map(item => ({ ...item, kind: "Practical", minutes: 20 }));
   const durationMs = SESSION_MINUTES * 60_000;
   return {
     id: `${track}-${level.toLowerCase().replace(/\W+/g, "-")}-${now}-${safeAttempt}`,
@@ -65,7 +78,7 @@ export function createSession({
     deadlineAt: now + durationMs,
     status: "in-progress",
     currentIndex: 0,
-    questions: ordered.map((item, index) => ({
+    questions: [...discussion, ...practical].map((item, index) => ({
       ...item,
       id: item.id ?? `${track}-${level}-${index}`,
       notes: "",
