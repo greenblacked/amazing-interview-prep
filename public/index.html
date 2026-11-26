@@ -41,7 +41,7 @@
             <div class="eyebrow">
               <span class="eyebrow-line"></span> THE PRACTICE STUDIO
             </div>
-            <h1>Get ready for<br /><em>the real thing.</em></h1>
+            <h1 tabindex="-1">Get ready for<br /><em>the real thing.</em></h1>
             <p class="welcome-lede">
               Answer an interviewer’s questions, defend your reasoning in follow-ups, then work through four hands-on cases.
             </p>
@@ -135,14 +135,16 @@
               </div>
             </aside>
             <section class="question-column" aria-labelledby="question-title">
-              <div class="question-kicker">
-                <span id="question-number">QUESTION 01</span
-                ><span id="question-category" class="category-chip"
-                  >PRACTICE</span
-                >
+              <div class="question-content">
+                <div class="question-kicker">
+                  <span id="question-number">QUESTION 01</span
+                  ><span id="question-category" class="category-chip"
+                    >PRACTICE</span
+                  >
+                </div>
+                <h1 id="question-title" tabindex="-1"></h1>
+                <div id="question-prompt" class="question-prompt"></div>
               </div>
-              <h1 id="question-title"></h1>
-              <div id="question-prompt" class="question-prompt"></div>
               <div class="question-controls">
                 <button id="previous-button" class="button button-quiet">
                   Previous
@@ -228,7 +230,7 @@
           <div class="finish-card">
             <div class="finish-icon" aria-hidden="true">✳</div>
             <div class="eyebrow">SESSION COMPLETE</div>
-            <h1>Session<br /><em>complete.</em></h1>
+            <h1 tabindex="-1">Session<br /><em>complete.</em></h1>
             <p id="finish-summary" class="finish-summary"></p>
             <div class="finish-stats" id="finish-stats"></div>
             <div class="finish-actions">
