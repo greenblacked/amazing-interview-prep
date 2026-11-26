@@ -1,0 +1,114 @@
+name: Deploy
+on:
+  push:
+    branches: [dev, stage]
+    tags: ['v*']
+  schedule:
+    - cron: '23 */2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: interview-deployment
+  queue: max
+jobs:
+  select:
+    runs-on: ubuntu-latest
+    outputs:
+      target: ${{ steps.select.outputs.target }}
+      tag: ${{ steps.select.outputs.tag }}
+      dev_sha: ${{ steps.select.outputs.dev_sha }}
+      stage_sha: ${{ steps.select.outputs.stage_sha }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: select
+        shell: bash
+        env:
+          HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          case "$GITHUB_REF" in
+            refs/heads/main)
+              releases=$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100")
+              if jq -e 'any(.[][]; (.tag_name == "v1.0.0" and .draft == false))' <<<"$releases" >/dev/null; then
+                echo 'Initial release already exists.'
+                exit 0
+              fi
+              target=bootstrap
+              tag=v1.0.0
+              if git rev-parse --verify -q "refs/tags/$tag" >/dev/null; then
+                test "$(git rev-list -1 "$tag")" = "$(git rev-parse HEAD)"
+              fi ;;
+            refs/heads/dev|refs/heads/stage) target="$GITHUB_REF_NAME"; tag='' ;;
+            refs/tags/*)
+              tag="$GITHUB_REF_NAME"
+              [[ "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
+              git merge-base --is-ancestor HEAD origin/main
+              target=production ;;
+            *) exit 1 ;;
+          esac
+          if [[ "$HAS_TOKEN" != true ]]; then
+            echo 'Waiting for the CLOUDFLARE_API_TOKEN repository secret.' >>"$GITHUB_STEP_SUMMARY"
+            if [[ "$target" == production ]]; then exit 1; fi
+            exit 0
+          fi
+          if [[ "$target" == bootstrap ]]; then
+            echo "dev_sha=$(git rev-parse origin/dev)" >>"$GITHUB_OUTPUT"
+            echo "stage_sha=$(git rev-parse origin/stage)" >>"$GITHUB_OUTPUT"
+          fi
+          echo "target=$target" >>"$GITHUB_OUTPUT"
+          echo "tag=$tag" >>"$GITHUB_OUTPUT"
+  dev:
+    needs: select
+    if: contains(fromJSON('["dev","bootstrap"]'), needs.select.outputs.target)
+    uses: ./.github/workflows/environment.yml
+    with:
+      environment: dev
+      revision: ${{ needs.select.outputs.dev_sha || github.sha }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  stage:
+    needs: [select, dev]
+    if: >-
+      !cancelled() && !failure() &&
+      contains(fromJSON('["stage","bootstrap"]'), needs.select.outputs.target)
+    uses: ./.github/workflows/environment.yml
+    with:
+      environment: stage
+      revision: ${{ needs.select.outputs.stage_sha || github.sha }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  production:
+    needs: [select, dev, stage]
+    if: >-
+      !cancelled() && !failure() &&
+      contains(fromJSON('["production","bootstrap"]'), needs.select.outputs.target)
+    uses: ./.github/workflows/environment.yml
+    with:
+      environment: production
+      revision: ${{ github.sha }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  release:
+    needs: [select, production]
+    if: ${{ !cancelled() && needs.production.result == 'success' }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record the verified release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.select.outputs.tag }}
+        run: |
+          if ! gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG" -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$TAG" --generate-notes
+          fi

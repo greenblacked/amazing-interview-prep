@@ -1,0 +1,33 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [dev, stage, main]
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - name: Check promotion source
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        run: |
+          case "$BASE" in
+            stage) test "$HEAD" = dev && test "$SAME_REPO" = true ;;
+            main) test "$HEAD" = stage && test "$SAME_REPO" = true ;;
+          esac
