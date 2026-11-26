@@ -2,7 +2,7 @@
 
 A two-hour mock interview studio for engineering management, coding, SQL, system design, low-level design, and AI coding. Choose Junior, Mid-level, or Senior. Each prompt includes space for an answer and an interviewer rubric. The timer and notes live in the current browser profile. Clearing site data removes them.
 
-The five technical formats follow the [Tech OA & Interview Questions collection](https://github.com/perixtar/Tech-OA-Interview-Questions). Scenarios and rubrics are written for this studio. Selected exercises link to related upstream practice material. Engineering Management adds people, delivery, and organizational decisions.
+The five technical formats follow the [Tech OA & Interview Questions collection](https://github.com/perixtar/Tech-OA-Interview-Questions). Scenarios and rubrics are written for this studio. New sessions start with four spoken questions and four follow-ups (40 minutes), then four practical cases (80 minutes). The five technical tracks draw their topics from the linked upstream collection. Engineering management questions are original. Engineering Management adds people, delivery, and organizational decisions.
 
 ## Run locally
 

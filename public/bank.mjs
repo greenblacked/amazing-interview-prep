@@ -473,3 +473,311 @@ export function questions(slug, level) {
     ...(related ? { source: "https://www.fastprep.io/" + related } : {}),
   }));
 }
+
+// Original interviewer questions and follow-ups grouped by track.
+const oralRounds = {
+  "coding": [
+    [
+      "Window counts",
+      "When can a sliding window replace a nested scan?",
+      "Give an input where shrinking the window greedily loses the answer.",
+      "Distinguishes monotonic state from arbitrary signed sums."
+    ],
+    [
+      "Cache eviction",
+      "Which operations must an LRU cache support efficiently?",
+      "What changes if frequency breaks ties before recency?",
+      "Separates lookup, ordering and bookkeeping costs."
+    ],
+    [
+      "Versioned arrays",
+      "How can a client read an older array value without copying every snapshot?",
+      "What if one index receives almost every write?",
+      "Tracks per-index history and compares read and write costs."
+    ],
+    [
+      "Linked cycles",
+      "How could two pointers detect a cycle using constant memory?",
+      "Why does resetting one pointer help locate the entry?",
+      "Reasons about distance and meeting points."
+    ],
+    [
+      "Interval boundaries",
+      "When do two booking intervals overlap?",
+      "How does your answer change if a booking may start when another ends?",
+      "States the boundary convention and tests equality."
+    ],
+    [
+      "Prefix searches",
+      "How would you count matching prefixes in sorted words?",
+      "What determines the upper boundary when words contain arbitrary characters?",
+      "Explains ordering assumptions and avoids an unsafe sentinel."
+    ],
+    [
+      "Top-k ties",
+      "When would you choose a heap over sorting all frequency counts?",
+      "How would a secondary ordering affect which item gets evicted?",
+      "Explains heap size, ordering and ties."
+    ],
+    [
+      "Connected components",
+      "How can you tell whether a connected component is complete?",
+      "Which part of that argument breaks with duplicate edges?",
+      "Connects vertex and distinct edge counts."
+    ]
+  ],
+  "sql": [
+    [
+      "Counting people",
+      "What is the difference between counting orders and counting paying customers?",
+      "What happens when you join an order to three line items?",
+      "Defines grain before aggregation."
+    ],
+    [
+      "Tied ranks",
+      "When do rank and dense rank give different results?",
+      "Who appears in the top two ranks for scores 9, 9 and 8?",
+      "Works through ties explicitly."
+    ],
+    [
+      "Missing events",
+      "How would you identify customers who never completed checkout?",
+      "What happens if the exclusion set contains NULL?",
+      "Explains anti-join and null semantics."
+    ],
+    [
+      "Running balances",
+      "Which ordering makes a running balance reproducible?",
+      "What if two transactions share the same timestamp?",
+      "Uses a stable tie-breaker and explicit window frame."
+    ],
+    [
+      "Retention cohorts",
+      "How would you define week-one retention?",
+      "How do you treat customers whose first week has not ended?",
+      "Defines denominator, time boundary and observation window."
+    ],
+    [
+      "Latest status",
+      "How would you choose the latest status for each shipment?",
+      "What if an old event arrives after the latest status?",
+      "Separates event time from ingestion time."
+    ],
+    [
+      "Weighted averages",
+      "Why can averaging daily conversion rates distort monthly conversion?",
+      "Construct two days where the unweighted result is misleading.",
+      "Recomputes the ratio from totals."
+    ],
+    [
+      "Index selection",
+      "Which columns matter in an index for a tenant and time-range query?",
+      "How would a single very large tenant affect the plan?",
+      "Relates selectivity and observed plan to data distribution."
+    ]
+  ],
+  "system-design": [
+    [
+      "Webhook delivery",
+      "When can a producer safely acknowledge an accepted webhook?",
+      "How does a consumer recognize a delivery repeated after a timeout?",
+      "Distinguishes durable acceptance and idempotent consumption."
+    ],
+    [
+      "Booking inventory",
+      "What invariant prevents two buyers from taking the final seat?",
+      "What happens when payment succeeds just after a hold expires?",
+      "Defines ownership, atomic transitions and compensation."
+    ],
+    [
+      "Feed fan-out",
+      "When is a feed cheaper to assemble on read?",
+      "What changes when one author has ten million followers?",
+      "Connects skew, fan-out and freshness."
+    ],
+    [
+      "Hot keys",
+      "Why can a distributed cache overload even when total capacity looks healthy?",
+      "How would you tell a hot key from a cold-cache restart?",
+      "Uses per-key or shard traffic and hit-rate evidence."
+    ],
+    [
+      "Pagination",
+      "Why can offset pagination skip records in a changing feed?",
+      "What does a stable cursor need besides a timestamp?",
+      "Uses stable ordering and explicit consistency semantics."
+    ],
+    [
+      "Backpressure",
+      "How should a queue consumer react when its dependency slows down?",
+      "Which signal distinguishes absorbing a burst from falling permanently behind?",
+      "Uses queue age, drain rate and bounded concurrency."
+    ],
+    [
+      "Regional recovery",
+      "What determines whether a service can fail over safely?",
+      "What state would you reconcile before allowing writes again?",
+      "States recovery targets and ownership of writes."
+    ],
+    [
+      "Rate limits",
+      "Where would you enforce limits shared by multiple API servers?",
+      "What happens if the shared counter becomes unavailable?",
+      "Explains accuracy, availability and failure policy."
+    ]
+  ],
+  "low-level-design": [
+    [
+      "Reservation states",
+      "What operations should a ticket hold expose?",
+      "Which transition must be atomic when confirmation races expiry?",
+      "Defines valid transitions and concurrent outcomes."
+    ],
+    [
+      "Pricing rules",
+      "How would you let clients combine pricing rules?",
+      "How do you express two discounts that cannot both apply?",
+      "Makes rule ordering and conflicts explicit."
+    ],
+    [
+      "Notification fan-out",
+      "Which interface separates delivery from subscription tracking?",
+      "Can a subscriber unsubscribe during delivery?",
+      "Defines iteration and ownership semantics."
+    ],
+    [
+      "Undo history",
+      "What must an undoable command record?",
+      "What happens to redo history after a new command?",
+      "Explains reversible state and history boundaries."
+    ],
+    [
+      "Resource ownership",
+      "Who closes a resource borrowed by a component?",
+      "How would a test catch a double close after initialization fails?",
+      "Defines ownership across exceptional paths."
+    ],
+    [
+      "Payment retries",
+      "How should a payment interface represent an unknown result?",
+      "How would callers retry safely after a timeout?",
+      "Separates uncertain outcome from definitive failure."
+    ],
+    [
+      "Clock boundaries",
+      "Why pass a clock to an expiring cache?",
+      "What if the system clock moves backward?",
+      "Separates elapsed time and wall time."
+    ],
+    [
+      "Extensible dispatch",
+      "When would you introduce a strategy interface for routing?",
+      "Which behavior belongs in the caller when a strategy fails?",
+      "Defines a narrow contract and fallback policy."
+    ]
+  ],
+  "ai-coding": [
+    [
+      "Reproducing a bug",
+      "What evidence would you give a coding assistant before asking for a fix?",
+      "How do you prove its patch addresses the original failure?",
+      "Uses a minimal case and an independent regression check."
+    ],
+    [
+      "Refund workflows",
+      "How would you review generated retry logic for a refund step?",
+      "What if the refund succeeds but the response is lost?",
+      "Checks idempotency and durable state."
+    ],
+    [
+      "Rating aggregates",
+      "An assistant changes how ratings are averaged. What would you verify first?",
+      "How do an edited review and a deleted review change your fixtures?",
+      "Defines aggregate semantics and mutation cases."
+    ],
+    [
+      "Notification repair",
+      "How would you test a generated fix for duplicate notifications?",
+      "Which test separates a duplicate event from two legitimate events?",
+      "Defines event identity and delivery expectations."
+    ],
+    [
+      "API compatibility",
+      "What contract would you give an assistant repairing an existing API?",
+      "Which consumer behavior might pass unit tests and still break?",
+      "Pins observable behavior and exercises a real caller."
+    ],
+    [
+      "Route selection",
+      "How would you assess an assistant-generated consistent hashing change?",
+      "What measurement would show excessive key movement?",
+      "Compares assignment distributions before and after membership changes."
+    ],
+    [
+      "Evaluation leakage",
+      "Why keep examples out of the implementation prompt?",
+      "What would convince you a passing score reflects memorization?",
+      "Uses held-out cases and distribution shifts."
+    ],
+    [
+      "Reconciliation",
+      "Which invariants would you give an assistant reconciling two ledgers?",
+      "How should it handle unmatched records that arrive tomorrow?",
+      "Preserves totals and distinguishes pending from incorrect."
+    ]
+  ],
+  "engineering-management": [
+    [
+      "Feedback",
+      "Tell me about difficult feedback you delivered. What did you actually say?",
+      "What did the other person do next, and how did you follow up?",
+      "Uses observed behavior and a specific follow-up."
+    ],
+    [
+      "Delivery trade-offs",
+      "Describe a commitment you renegotiated. Who needed to know first?",
+      "Which option did you reject, and what evidence ruled it out?",
+      "Explains constraints, alternatives and communication."
+    ],
+    [
+      "Delegation",
+      "Tell me about a decision you handed to another engineer.",
+      "When did you step in or deliberately stay out?",
+      "Defines authority and a concrete escalation boundary."
+    ],
+    [
+      "Incident leadership",
+      "Describe a difficult decision you made during an incident.",
+      "What information available at the time would have changed your call?",
+      "Separates contemporaneous evidence from hindsight."
+    ],
+    [
+      "Developing people",
+      "How did you help someone take on unfamiliar responsibility?",
+      "How did you distinguish independent progress from your own involvement?",
+      "Gives an observable growth signal."
+    ],
+    [
+      "Conflict",
+      "Tell me about two teams that disagreed on an implementation.",
+      "How did you get commitment from the team whose proposal lost?",
+      "Identifies decision rights and follow-through."
+    ],
+    [
+      "Hiring",
+      "Which evidence would you collect before opening a new role?",
+      "What would change your mind about hiring versus developing someone internally?",
+      "Connects the role to a specific capability gap."
+    ],
+    [
+      "Prioritization",
+      "Describe an initiative you stopped before it was complete.",
+      "What did you tell the engineers who had invested in it?",
+      "Explains opportunity cost and acknowledges the work."
+    ]
+  ]
+};
+
+export function discussionRounds(track) {
+  return oralRounds[track];
+}
