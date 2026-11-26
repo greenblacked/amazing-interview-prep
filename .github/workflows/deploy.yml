@@ -1,7 +1,7 @@
 name: Deploy
 on:
   push:
-    branches: [dev, stage]
+    branches: [dev, stage, main]
     tags: ['v*']
   schedule:
     - cron: '23 */2 * * *'
