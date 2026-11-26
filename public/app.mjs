@@ -12,6 +12,7 @@ const welcomeView = $("#welcome-view");
 const sessionView = $("#session-view");
 const finishView = $("#finish-view");
 let releaseEditor;
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const memoryRecords = new Map();
 let activeTrack = tracks[0]?.slug;
 let activeLevel = levels[1] ?? levels[0];
@@ -175,7 +176,19 @@ function showView(view) {
   welcomeView.hidden = view !== "welcome";
   sessionView.hidden = view !== "session";
   finishView.hidden = view !== "finish";
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  const section = document.getElementById(view + "-view");
+  if (view !== "session") section.querySelector("h1").focus({ preventScroll: true });
+  window.scrollTo({ top: 0, behavior: "instant" });
+  animateEntrance(section);
+}
+
+function animateEntrance(element) {
+  element.getAnimations().forEach(animation => animation.cancel());
+  if (reducedMotion.matches) return;
+  element.animate(
+    [{ opacity: 0.78, transform: "translateY(5px)" }, { opacity: 1, transform: "translateY(0)" }],
+    { duration: 190, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+  );
 }
 
 function startNewSession(record) {
@@ -216,6 +229,7 @@ function openSession(record) {
   showView("session");
   persist();
   renderQuestion();
+  $("#question-title").focus({ preventScroll: true });
   updateTimer();
   clearInterval(timerHandle);
   timerHandle = setInterval(updateTimer, 1000);
@@ -274,6 +288,11 @@ function renderQuestion() {
     button.addEventListener("click", () => goToQuestion(i));
     nav.append(button);
   });
+  const activeButton = nav.querySelector('[aria-current="true"]');
+  if (nav.scrollWidth > nav.clientWidth) {
+    const offset = activeButton.getBoundingClientRect().left - nav.getBoundingClientRect().left;
+    nav.scrollLeft += offset - (nav.clientWidth - activeButton.offsetWidth) / 2;
+  }
   $("#progress-count").textContent =
     `${String(index + 1).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
   $("#question-progress").max = total;
@@ -313,6 +332,13 @@ function goToQuestion(index) {
   session.currentIndex = index;
   persist();
   renderQuestion();
+  const title = $("#question-title");
+  title.focus({ preventScroll: true });
+  const bounds = title.getBoundingClientRect();
+  if (bounds.top < 0 || bounds.bottom > window.innerHeight) {
+    title.scrollIntoView({ block: "center", behavior: reducedMotion.matches ? "instant" : "smooth" });
+  }
+  animateEntrance($(".question-content"));
 }
 
 function updateTimer() {

@@ -171,8 +171,8 @@ main {
 .welcome-lede {
   color: #687067;
   max-width: 380px;
-  font-size: 16px;
-  line-height: 1.7;
+  font-size: 17px;
+  line-height: 1.65;
 }
 .promise-row {
   display: flex;
@@ -318,17 +318,21 @@ main {
 .button {
   border: 0;
   cursor: pointer;
-  font: 600 12px var(--sans);
+  font: 600 13px var(--sans);
   display: inline-flex;
   align-items: center;
   gap: 24px;
   padding: 13px 17px;
+  min-height: 44px;
   transition:
     background 0.16s,
     transform 0.16s;
 }
-.button:hover {
+.button:hover:not(:disabled) {
   transform: translateY(-1px);
+}
+.button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 .button-primary {
   background: var(--green);
@@ -613,13 +617,13 @@ main {
   letter-spacing: 0.1em;
 }
 .question-column h1 {
-  font: 600 clamp(28px, 3vw, 41px) / 1.12 var(--display);
+  font: 600 clamp(30px, 3.2vw, 44px) / 1.12 var(--display);
   letter-spacing: -0.06em;
   max-width: 680px;
   margin: 26px 0 20px;
 }
 .question-prompt {
-  font: 15px/1.8 var(--sans);
+  font: 17px/1.72 var(--sans);
   color: #4f584e;
   max-width: 690px;
   white-space: pre-line;
@@ -693,7 +697,7 @@ main {
   background: linear-gradient(to bottom, transparent 29px, #eff0e9 30px);
   background-size: 100% 30px;
   padding: 8px 0;
-  font: 12px/30px var(--sans);
+  font: 16px/30px var(--sans);
   color: var(--ink);
   outline: none;
 }
@@ -1125,7 +1129,8 @@ main {
   .question-nav {
     flex-direction: row;
     overflow-x: auto;
-    gap: 3px;
+    overscroll-behavior-inline: contain;
+    gap: 4px;
     padding-bottom: 4px;
   }
   .question-link {
@@ -1150,11 +1155,11 @@ main {
     min-height: 485px;
   }
   .question-column h1 {
-    font-size: 31px;
+    font-size: clamp(30px, 8.5vw, 34px);
     margin: 20px 0 14px;
   }
   .question-prompt {
-    font-size: 14px;
+    font-size: 16px;
   }
   .question-controls {
     padding-top: 25px;
@@ -1408,4 +1413,5 @@ main {
 @media (max-width: 580px) {
   .agenda-section { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
   .notes-head { flex-wrap: wrap; }
+  .notes-card textarea, .rubric-card textarea, .rubric-card select { font-size: 16px; }
 }
