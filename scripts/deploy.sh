@@ -13,20 +13,24 @@ if [[ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]]; then
   CLOUDFLARE_ACCOUNT_ID=$(jq -er 'select(.success and (.result | length == 1)) | .result[0].account.id | strings | select(length > 0)' <<<"$zone")
   export CLOUDFLARE_ACCOUNT_ID
 fi
-host=$(jq -er --arg env "$environment" '.env[$env].routes[0].pattern' wrangler.json)
+domain=$(jq -er '.routes[0].pattern' wrangler.json)
 revision=$(git rev-parse HEAD)
 echo "$revision" >public/revision.txt
-./node_modules/.bin/wrangler deploy --env "$environment"
-
-# New certificates, DNS and Worker assets can take time to propagate.
-for attempt in {1..30}; do
-  if live=$(curl -fsS --max-time 8 "https://$host/revision.txt?sha=$revision") &&
-     [[ "$live" == "$revision" ]] &&
-     curl -fsS --max-time 8 "https://$host/" | grep -i 'Amazing Interview Prep' >/dev/null; then
-    echo "Verified $host at $revision"
-    exit 0
-  fi
-  sleep 10
-done
-echo "Live smoke check failed for $host at $revision" >&2
-exit 1
+wrangler=./node_modules/.bin/wrangler
+if [[ "$environment" == production ]]; then
+  "$wrangler" deploy
+  url="https://$domain"
+else
+  output=$(mktemp)
+  trap 'rm -f "$output"' EXIT
+  printf '\n/*\n  X-Robots-Tag: noindex, nofollow\n' >>public/_headers
+  WRANGLER_OUTPUT_FILE_PATH="$output" "$wrangler" preview --name "$environment" --tag "$revision"
+  worker=$(jq -er '.name' wrangler.json)
+  url=$(jq -ser --arg prefix "https://$environment-$worker." '
+    [.[] | select(.type == "preview")] | last | .preview_urls[]
+    | select(startswith($prefix)) | select(test("^https://[a-z0-9-]+\\.[a-z0-9-]+\\.workers\\.dev$"))
+  ' "$output")
+  scripts/verify-site.sh "$url" "$revision"
+  url="https://$environment.$domain"
+fi
+scripts/verify-site.sh "$url" "$revision"
