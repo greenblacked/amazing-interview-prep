@@ -206,7 +206,7 @@ function renderQuestion() {
     `QUESTION ${String(index + 1).padStart(2, "0")}`;
   $("#question-title").textContent = question.title;
   $("#question-prompt").textContent = question.prompt;
-  $("#question-category").textContent = session.level.toUpperCase();
+  $("#question-category").textContent = (question.kind ?? "Practical").toUpperCase();
   $("#rubric-text").textContent = question.rubric;
   $("#notes-input").value = question.notes ?? "";
   $("#confidence-select").value = question.selfReview?.confidence ?? "";
@@ -214,10 +214,6 @@ function renderQuestion() {
   $("#improve-input").value = question.selfReview?.improve ?? "";
   $("#reviewed-check").checked = Boolean(question.reviewed);
   $("#rubric-details").open = false;
-  $("#source-wrap").hidden = !question.source;
-  if (question.source) {
-    $("#question-source").href = question.source;
-  }
   const nav = $("#question-nav");
   nav.replaceChildren();
   session.questions.forEach((item, i) => {
@@ -245,12 +241,14 @@ function renderQuestion() {
   });
   $("#progress-count").textContent =
     `${String(index + 1).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
-  $("#question-progress").dataset.progress = String(index + 1);
+  $("#question-progress").max = total;
+  $("#question-progress").value = index + 1;
+  $("#agenda-heading").textContent = total + " prompts";
   $("#previous-button").disabled = index === 0;
   $("#next-button").textContent =
     index === total - 1 ? "Finish session" : "Next prompt";
   $("#question-time-hint").textContent =
-    `${QUESTION_MINUTES} minutes for this prompt. Notes save as you type.`;
+    `${question.minutes ?? QUESTION_MINUTES} minutes for this prompt. Notes save as you type.`;
   $("#note-count").textContent =
     `${wordCount(question.notes)} ${wordCount(question.notes) === 1 ? "word" : "words"}`;
 }

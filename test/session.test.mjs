@@ -4,7 +4,6 @@ import {
   createSession,
   remainingMs,
   SESSION_MINUTES,
-  SESSION_QUESTION_COUNT,
   QUESTION_MINUTES,
 } from "../public/session.mjs";
 
@@ -14,7 +13,7 @@ const cases = Array.from({ length: 12 }, (_, index) => ({
   rubric: `Review ${index + 1}`,
 }));
 
-test("creates a two-hour session of six 20-minute prompts with initialized private work fields", () => {
+test("creates a two-hour session of eight spoken questions and four practical cases with initialized private work fields", () => {
   const session = createSession({
     track: "coding",
     level: "Senior",
@@ -24,13 +23,14 @@ test("creates a two-hour session of six 20-minute prompts with initialized priva
   });
   assert.equal(session.durationMs, 120 * 60 * 1000);
   assert.equal(SESSION_MINUTES, 120);
-  assert.equal(SESSION_QUESTION_COUNT, 6);
+  assert.equal(session.questions.reduce((n, q) => n + q.minutes, 0), 120);
+  assert.equal(session.questions.filter(q => q.kind === "Practical").length, 4);
   assert.equal(QUESTION_MINUTES, 20);
   assert.equal(session.deadlineAt, 1000 + 120 * 60 * 1000);
   assert.equal(session.status, "in-progress");
-  assert.equal(session.questions.length, 6);
+  assert.equal(session.questions.length, 12);
   assert.ok(
-    session.questions.every((question) =>
+    session.questions.filter(q => q.kind === "Practical").every((question) =>
       cases.some((item) => item.title === question.title),
     ),
   );
@@ -59,11 +59,11 @@ test("alternates complementary groups with no repeated cases across consecutive 
     });
     const currentTitles = current.questions.map((item) => item.title);
     const nextTitles = next.questions.map((item) => item.title);
-    assert.equal(currentTitles.length, 6);
-    assert.equal(nextTitles.length, 6);
+    assert.equal(currentTitles.length, 12);
+    assert.equal(nextTitles.length, 12);
     assert.equal(
       new Set([...currentTitles, ...nextTitles]).size,
-      12,
+      24,
       `attempts ${attempt} and ${attempt + 1}`,
     );
   }
@@ -98,7 +98,7 @@ test("keeps the same attempt reproducible and uses the complementary group at th
   assert.equal(
     new Set([...first.questions, ...next.questions].map((item) => item.title))
       .size,
-    12,
+    24,
   );
 });
 

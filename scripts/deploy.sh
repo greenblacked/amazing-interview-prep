@@ -19,7 +19,7 @@ wrangler=./node_modules/.bin/wrangler
 if [[ "$environment" == production ]]; then
   "$wrangler" deploy
   if [[ "${GITHUB_REF_TYPE:-}" == tag ]]; then
-    scripts/verify-site.sh "https://$(jq -er '.routes[0].pattern' wrangler.json)" "$revision"
+    scripts/verify-site.sh "https://amazing-interview-prep.zolotov.workers.dev" "$revision"
   fi
   exit 0
 fi
