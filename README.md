@@ -30,7 +30,7 @@ After credentials are added, the scheduled Deploy workflow on main attempts firs
 
 ## Changes and releases
 
-Open feature PRs against dev. Promote dev to stage, then stage to main. CI checks promotion source, runs session tests and packages a Wrangler dry run. Deployment jobs rerun validation on the exact revision before using credentials. GitHub branch protection is an external repository setting. Set the CI validate check as required if branch rules are available for the repository.
+Open feature PRs against dev. Promote dev to stage, then stage to main. PR validation runs session tests and a Wrangler dry run. After bootstrap, promotion PRs also verify that the source preview serves the exact PR head SHA and homepage. A newer PR revision cancels its older validation run. Use Actions → CI → Run workflow to recheck a branch manually. Tagged releases smoke-test the production workers.dev hostname. Deployment jobs rerun validation on the exact revision before using credentials. GitHub branch protection is an external repository setting. Set the CI validate check as required if branch rules are available for the repository.
 
 After merging to main, tag the tested commit with the next semantic version. The tagged deploy verifies the live Worker before publishing the GitHub release.
 
