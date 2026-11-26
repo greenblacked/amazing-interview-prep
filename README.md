@@ -18,14 +18,14 @@ Open the local URL printed by Wrangler. Only the static files under `public/` ar
 
 ## First deployment
 
-The production hostname is **interview.szolotov.com**. With the source on GitHub and the main, stage, and dev branches present, add **CLOUDFLARE_API_TOKEN** under repository Settings → Secrets and variables → Actions → Repository secrets. Use a Workers deployment token scoped to your Cloudflare account and the szolotov.com zone. It needs product-level Workers Admin to create the three Workers, Workers Routes Write for domain binding, and Zone Read for account discovery. Optionally set CLOUDFLARE_ACCOUNT_ID if using a token without zone listing. The zone must be active and the three hostnames below must be available for Worker custom domains.
+One Worker named `amazing-interview-prep` hosts production and two named Worker Previews, `dev` and `stage`. The production hostname is **interview.szolotov.com**. With the source on GitHub and the main, stage, and dev branches present, add **CLOUDFLARE_API_TOKEN** under repository Settings → Secrets and variables → Actions → Repository secrets. Use a Workers deployment token scoped to your Cloudflare account and the szolotov.com zone. It needs product-level Workers Admin to deploy the Worker and its previews, Workers Routes Write for domain binding, and Zone Read for account discovery. Optionally set CLOUDFLARE_ACCOUNT_ID if using a token without zone listing. The zone must be active and the three hostnames below must be available for Worker custom domains.
 
-After credentials are added, the scheduled Deploy workflow on main attempts first deployment every two hours at minute 23 UTC. GitHub controls the actual start time. For immediate execution, run **Actions → Deploy → Run workflow** on main. It deploys the current dev and stage revisions first, then the selected main revision. Each deploy must serve its matching Git SHA and the app homepage before the next environment starts. A successful bootstrap publishes the v1.0.0 GitHub release and tag. Subsequent scheduled checks exit after finding the initial release.
+After credentials are added, the scheduled Deploy workflow on main attempts first deployment every two hours at minute 23 UTC. GitHub controls the actual start time. For immediate execution, run **Actions → Deploy → Run workflow** on main. Bootstrap deploys the selected main revision to production and verifies its Git SHA and homepage on the custom domain. It then creates and verifies the dev preview, followed by stage. Each preview must pass the same checks on its workers.dev and custom URLs. Branch pushes defer deployment until bootstrap publishes v1.0.0. A successful bootstrap publishes the v1.0.0 GitHub release and tag. Subsequent scheduled checks exit after finding the initial release.
 
 | Environment | Source | Hostname |
 | --- | --- | --- |
-| Development | dev | interview-dev.szolotov.com |
-| Staging | stage | interview-stage.szolotov.com |
+| Development | dev | dev.interview.szolotov.com |
+| Staging | stage | stage.interview.szolotov.com |
 | Production | initial main bootstrap, then vMAJOR.MINOR.PATCH tags on main history | interview.szolotov.com |
 
 ## Changes and releases
