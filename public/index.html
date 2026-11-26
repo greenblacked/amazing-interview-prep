@@ -45,9 +45,9 @@
             <p class="welcome-lede">
               Answer an interviewer’s questions, defend your reasoning in follow-ups, then work through four hands-on cases.
             </p>
-            <div class="promise-row">
-              <span><b>2h</b> total session</span><span><b>8</b> spoken questions</span
-              ><span><b>4</b> practical cases</span>
+            <div class="interview-plan" aria-label="Two-hour interview plan">
+              <div><strong>40 min</strong><span>Discussion &amp; follow-ups</span></div>
+              <div><strong>80 min</strong><span>Practical cases</span></div>
             </div>
           </div>
           <div class="setup-panel">
@@ -80,6 +80,7 @@
                 Begin session
               </button>
             </div>
+            <p id="editor-message" role="status"></p>
             <div id="resume-callout" class="resume-callout" hidden></div>
           </div>
           <div class="decor-orbit" aria-hidden="true">
@@ -128,10 +129,6 @@
                 aria-label="Question navigation"
               ></nav>
               <div class="rail-bottom">
-                <div class="save-state">
-                  <span class="status-dot"></span
-                  ><span id="save-state">Saved on this device</span>
-                </div>
                 <button id="finish-early" class="text-button finish-link">
                   Finish session
                 </button>
@@ -166,9 +163,7 @@
                     <span class="eyebrow">THINK IT THROUGH</span>
                     <h2>Your notes</h2>
                   </div>
-                  <span class="autosave-label"
-                    ><span class="status-dot"></span> AUTO-SAVED</span
-                  >
+                  <span class="autosave-label" id="save-state" role="status">Notes on this device</span>
                 </div>
                 <p class="notes-intro">
                   Capture your approach, assumptions, and the questions you'd
@@ -256,7 +251,7 @@
       </main>
       <footer class="site-footer">
         <span>INTERVIEW STUDIO</span
-        ><span>PROGRESS SAVED ON THIS DEVICE</span>
+        ><span>TWO-HOUR MOCK INTERVIEW</span>
       </footer>
     </div>
     <dialog id="help-dialog" class="help-dialog">

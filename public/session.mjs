@@ -55,8 +55,9 @@ export function createSession({
   );
   const ordered = shuffled(group, hashSeed(`${track}/${level}/${safeAttempt}`));
   const oralPool = discussionRounds(track);
-  const offset = (safeAttempt % 2) * 4;
-  const rounds = shuffled(oralPool.slice(offset, offset + 4), hashSeed(`oral/${track}/${level}/${safeAttempt}`));
+  const deck = shuffled(oralPool, hashSeed(`oral/${track}/${level}`));
+  const offset = (safeAttempt * 4) % deck.length;
+  const rounds = shuffled(deck.slice(offset, offset + 4), hashSeed(`order/${safeAttempt}`));
   const followUpDepth = {
     Junior: "Walk through one concrete example.",
     "Mid-level": "Compare two plausible answers and explain your choice.",

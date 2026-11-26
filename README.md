@@ -26,7 +26,7 @@ After credentials are added, the scheduled Deploy workflow on main attempts firs
 | --- | --- | --- |
 | Development | dev | dev.interview.szolotov.com |
 | Staging | stage | stage.interview.szolotov.com |
-| Production | initial main bootstrap, then vMAJOR.MINOR.PATCH tags on main history | interview.szolotov.com |
+| Production | initial main bootstrap, then vMAJOR.MINOR.PATCH tags on the current stage-to-main merge commit | interview.szolotov.com |
 
 ## Changes and releases
 
