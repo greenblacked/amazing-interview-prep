@@ -1,7 +1,7 @@
 name: Deploy
 on:
   push:
-    branches: [dev, stage]
+    branches: [dev, stage, main]
     tags: ['v*']
   schedule:
     - cron: '23 */2 * * *'
@@ -32,10 +32,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          releases=$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100")
+          initialized=$(jq -r 'any(.[][]; (.tag_name == "v1.0.0" and .draft == false))' <<<"$releases")
+          if [[ "$GITHUB_REF" != refs/heads/main && "$initialized" != true ]]; then
+            echo 'First deployment must run from main. Branch previews are included in bootstrap.' >>"$GITHUB_STEP_SUMMARY"
+            if [[ "$GITHUB_REF" == refs/tags/* ]]; then exit 1; fi
+            exit 0
+          fi
           case "$GITHUB_REF" in
             refs/heads/main)
-              releases=$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100")
-              if jq -e 'any(.[][]; (.tag_name == "v1.0.0" and .draft == false))' <<<"$releases" >/dev/null; then
+              if [[ "$initialized" == true ]]; then
                 echo 'Initial release already exists.'
                 exit 0
               fi
@@ -63,9 +69,22 @@ jobs:
           fi
           echo "target=$target" >>"$GITHUB_OUTPUT"
           echo "tag=$tag" >>"$GITHUB_OUTPUT"
-  dev:
+  production:
     needs: select
-    if: contains(fromJSON('["dev","bootstrap"]'), needs.select.outputs.target)
+    if: >-
+      contains(fromJSON('["production","bootstrap"]'), needs.select.outputs.target)
+    uses: ./.github/workflows/environment.yml
+    with:
+      environment: production
+      revision: ${{ github.sha }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  dev:
+    needs: [select, production]
+    if: >-
+      !cancelled() && (needs.select.outputs.target == 'dev' ||
+      (needs.select.outputs.target == 'bootstrap' && needs.production.result == 'success'))
     uses: ./.github/workflows/environment.yml
     with:
       environment: dev
@@ -76,8 +95,8 @@ jobs:
   stage:
     needs: [select, dev]
     if: >-
-      !cancelled() && !failure() &&
-      contains(fromJSON('["stage","bootstrap"]'), needs.select.outputs.target)
+      !cancelled() && (needs.select.outputs.target == 'stage' ||
+      (needs.select.outputs.target == 'bootstrap' && needs.dev.result == 'success'))
     uses: ./.github/workflows/environment.yml
     with:
       environment: stage
@@ -85,21 +104,11 @@ jobs:
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-  production:
-    needs: [select, dev, stage]
-    if: >-
-      !cancelled() && !failure() &&
-      contains(fromJSON('["production","bootstrap"]'), needs.select.outputs.target)
-    uses: ./.github/workflows/environment.yml
-    with:
-      environment: production
-      revision: ${{ github.sha }}
-    secrets:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
   release:
-    needs: [select, production]
-    if: ${{ !cancelled() && needs.production.result == 'success' }}
+    needs: [select, production, stage]
+    if: >-
+      !cancelled() && needs.production.result == 'success' &&
+      (needs.select.outputs.target == 'production' || needs.stage.result == 'success')
     permissions:
       contents: write
     runs-on: ubuntu-latest
