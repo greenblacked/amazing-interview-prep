@@ -1,3 +1,5 @@
+import { practiceCases } from "./practice-cases.mjs";
+
 export const levels = ["Junior", "Mid-level", "Senior"];
 
 export const tracks = [
@@ -466,12 +468,20 @@ export function questions(slug, level) {
   const tier = levels.indexOf(level);
   if (!Object.hasOwn(bank, slug) || tier < 0)
     throw new RangeError("Unknown interview track or level");
-  return bank[slug].map(([title, scenario, rubric, related]) => ({
+  const existing = bank[slug].map(([title, scenario, rubric, related]) => ({
     title,
     prompt: scenario + " " + expectations[slug][tier],
     rubric,
     ...(related ? { source: "https://www.fastprep.io/" + related } : {}),
   }));
+  const extra = (practiceCases[slug] ?? []).map(({ id, title, prompt, rubric }) => ({
+    id, title, prompt: prompt + " " + expectations[slug][tier], rubric,
+  }));
+  return [...existing, ...extra];
+}
+
+export function practiceAnswer(track, id) {
+  return practiceCases[track]?.find(item => item.id === id)?.answer;
 }
 
 // Original interviewer questions and follow-ups grouped by track.
