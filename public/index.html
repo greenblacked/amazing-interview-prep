@@ -144,6 +144,32 @@
                 </div>
                 <h1 id="question-title" tabindex="-1"></h1>
                 <div id="question-prompt" class="question-prompt"></div>
+                <aside id="strategy-examples" class="prompt-examples" aria-labelledby="strategy-examples-title" hidden>
+                  <h2 id="strategy-examples-title">Example scenarios</h2>
+                  <ul>
+                    <li>A cluster migration would simplify operations, but the team also has a security remediation deadline.</li>
+                    <li>An internal developer portal could speed up onboarding, but teams disagree on which workflows to standardize.</li>
+                    <li>A second region could improve recovery, but the team has yet to measure restore time in the current region.</li>
+                  </ul>
+                </aside>
+                <details id="strategy-guide" class="rubric-card answer-guide" hidden>
+                  <summary>
+                    <strong>Strategy answer guide</strong>
+                    <span class="expand-icon" aria-hidden="true">+</span>
+                  </summary>
+                  <div class="rubric-content">
+                    <article id="strategy-answer">
+                      <h2>Model answer</h2>
+                      <p>“Our platform team proposed moving several internal services to a shared Kubernetes cluster. The design would reduce maintenance, but the same two engineers owned a time-sensitive access-control remediation. I compared the expected on-call savings with the migration effort, the remediation deadline, and the risk of splitting the team’s attention.”</p>
+                      <p>“I deferred the migration, agreed to fund a small pilot after remediation, and wrote down the evidence we’d need to proceed. The remediation closed on time. The pilot then gave us actual upgrade and rollback timings before we committed the other teams.”</p>
+                    </article>
+                    <article id="strategy-follow-up-answer">
+                      <h2>Model follow-up answer</h2>
+                      <p>“I’d revisit it if the current clusters consumed more than one engineer-day a week of recurring maintenance for a month, or if an upcoming support deadline put them at risk. Before committing, I’d ask the pilot owner to demonstrate a successful rollback and confirm that the migration would fit the team’s capacity.”</p>
+                    </article>
+                    <p>Use this structure with your own experience. State the benefit, the competing priority, your decision, the outcome, and what would reopen it.</p>
+                  </div>
+                </details>
               </div>
               <div class="question-controls">
                 <button id="previous-button" class="button button-quiet">
