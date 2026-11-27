@@ -19,3 +19,21 @@ for (const track of tracks) {
     assert.equal(new Set(prompts).size, prompts.length);
   });
 }
+
+test("each new practice case has a stable, separately revealed answer at every level", async () => {
+  const { practiceAnswer } = await import("../public/bank.mjs");
+  const { practiceCases } = await import("../public/practice-cases.mjs");
+  for (const [track, cases] of Object.entries(practiceCases)) {
+    assert.equal(new Set(cases.map(item => item.id)).size, cases.length);
+    for (const level of levels) {
+      const pool = questions(track, level);
+      for (const item of cases) {
+        const question = pool.find(entry => entry.id === item.id);
+        assert.ok(question, `${track} / ${level} / ${item.id}`);
+        assert.equal(Object.hasOwn(question, "answer"), false);
+        assert.ok(practiceAnswer(track, item.id).every(paragraph => paragraph.trim()));
+      }
+    }
+  }
+  assert.equal(practiceAnswer("coding", "legacy-question"), undefined);
+});

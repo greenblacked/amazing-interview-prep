@@ -1,4 +1,4 @@
-import { tracks, levels, questions } from "./bank.mjs";
+import { tracks, levels, questions, practiceAnswer } from "./bank.mjs";
 import {
   createSession,
   remainingMs,
@@ -256,6 +256,16 @@ function renderQuestion() {
   strategyGuide.open = false;
   $("#strategy-answer").hidden = !strategy;
   $("#strategy-follow-up-answer").hidden = !strategyFollowUp;
+  const answer = practiceAnswer(session.track, question.id);
+  const answerGuide = $("#practice-answer-guide");
+  answerGuide.open = false;
+  answerGuide.hidden = !answer;
+  $("#practice-answer-body").replaceChildren();
+  for (const paragraph of answer ?? []) {
+    const text = document.createElement("p");
+    text.textContent = paragraph;
+    $("#practice-answer-body").append(text);
+  }
   $("#question-category").textContent = (question.kind ?? "Practical").toUpperCase();
   $("#rubric-text").textContent = question.rubric;
   $("#notes-input").value = question.notes ?? "";
