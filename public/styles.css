@@ -646,6 +646,27 @@ main {
 .question-prompt ol {
   padding-left: 20px;
 }
+.prompt-examples {
+  margin-top: 24px;
+  padding: 14px 18px;
+  border-left: 3px solid var(--green);
+  background: #edf1e9;
+}
+.prompt-examples h2,
+.answer-guide h2 {
+  font-size: 15px;
+  margin: 0 0 8px;
+}
+.prompt-examples ul {
+  margin: 0;
+  padding-left: 20px;
+}
+.prompt-examples li + li {
+  margin-top: 6px;
+}
+.answer-guide {
+  margin-top: 16px;
+}
 .question-controls {
   display: flex;
   justify-content: space-between;

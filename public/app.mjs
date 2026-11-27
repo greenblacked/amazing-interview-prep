@@ -248,6 +248,14 @@ function renderQuestion() {
     `QUESTION ${String(index + 1).padStart(2, "0")}`;
   $("#question-title").textContent = question.title;
   $("#question-prompt").textContent = question.prompt;
+  const strategy = session.track === "engineering-management" && question.title === "Strategy";
+  const strategyFollowUp = session.track === "engineering-management" && question.title === "Strategy follow-up";
+  $("#strategy-examples").hidden = !strategy;
+  const strategyGuide = $("#strategy-guide");
+  strategyGuide.hidden = !(strategy || strategyFollowUp);
+  strategyGuide.open = false;
+  $("#strategy-answer").hidden = !strategy;
+  $("#strategy-follow-up-answer").hidden = !strategyFollowUp;
   $("#question-category").textContent = (question.kind ?? "Practical").toUpperCase();
   $("#rubric-text").textContent = question.rubric;
   $("#notes-input").value = question.notes ?? "";
